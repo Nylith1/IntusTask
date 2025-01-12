@@ -22,7 +22,7 @@ This project allows users to draw, resize, and validate an SVG rectangle while d
 ### Frontend
 
 1. Clone the repository to your local machine.
-2. Navigate to the front-end project directory.
+2. Navigate to the front-end project directory: **intus-task-frontend**
 3. Run the following command to install the required dependencies:
    **npm install**
 4. Create an .env file in the root directory of the project (if not already present) and add the following environment variable:
