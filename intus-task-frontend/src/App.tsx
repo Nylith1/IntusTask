@@ -11,6 +11,8 @@ const App = () => {
   const [error, setError] = useState("");
   const [isValidating, setIsValidating] = useState(false);
 
+  const perimeter = 2 * (dimensions.width + dimensions.height);
+
   useEffect(() => {
     axios
       .get(`${BASE_URL}api/Rectangle/GetRectangle`)
@@ -54,8 +56,6 @@ const App = () => {
       height: data.size.height,
     });
   };
-
-  const perimeter = 2 * (dimensions.width + dimensions.height);
 
   return (
     <div
