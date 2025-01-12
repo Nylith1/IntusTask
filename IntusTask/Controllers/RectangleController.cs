@@ -11,9 +11,9 @@ public class RectangleController(IMediator mediator) : BaseController
     private const string JsonFilePath = "rectangle.json";
 
     [HttpGet(nameof(GetRectangle))]
-    public async Task<IActionResult> GetRectangle(CancellationToken cancellationToken)
+    public async Task<IActionResult> GetRectangle()
     {
-        var result = await mediator.Send(new GetRectangleRequest(), cancellationToken);
+        var result = await mediator.Send(new GetRectangleRequest());
         return MapToActionResult(result);
     }
 

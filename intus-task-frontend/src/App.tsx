@@ -1,16 +1,15 @@
-import { useEffect, useRef, useState } from "react";
-import axios, { CancelTokenSource } from "axios";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
 
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+let abortController: AbortController | undefined;
+
 const App = () => {
-  const BASE_URL = import.meta.env.VITE_BASE_URL;
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [error, setError] = useState("");
   const [isValidating, setIsValidating] = useState(false);
-  const [cancelToken, setCancelToken] = useState<CancelTokenSource | null>(
-    null
-  );
 
   useEffect(() => {
     axios
@@ -18,46 +17,32 @@ const App = () => {
       .then((response) => setDimensions(response.data));
   }, []);
 
-  const activeRequestRef = useRef<number | null>(null);
-
   const handleResizeStop = async () => {
-    const requestId = Date.now();
-    activeRequestRef.current = requestId;
+    let requestCancelled = false;
     setIsValidating(true);
+    setError("");
 
-    if (cancelToken) {
-      cancelToken.cancel();
+    if (abortController) {
+      abortController.abort();
     }
 
-    const source = axios.CancelToken.source();
-    setCancelToken(source);
+    abortController = new AbortController();
 
     await axios
       .patch(`${BASE_URL}api/Rectangle/UpdateRectangle`, dimensions, {
-        cancelToken: source.token,
-      })
-      .then(() => {
-        if (activeRequestRef.current === requestId) {
-          setError("");
-        }
+        signal: abortController.signal,
       })
       .catch((err) => {
-        if (activeRequestRef.current === requestId) {
-          if (axios.isCancel(err)) {
-            setError("");
-          } else if (
-            err.response &&
-            err.response.data &&
-            err.response.data.message
-          ) {
-            setError(err.response.data.message);
-          } else {
-            setError("Something wrong.");
-          }
+        if (axios.isCancel(err)) {
+          requestCancelled = true;
+        } else if (err?.response?.data?.message) {
+          setError(err.response.data.message);
+        } else {
+          setError("Something wrong.");
         }
       })
       .finally(() => {
-        if (activeRequestRef.current === requestId) {
+        if (!requestCancelled) {
           setIsValidating(false);
         }
       });
